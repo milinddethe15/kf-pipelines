@@ -18,11 +18,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	scheduledworkflow "github.com/kubeflow/pipelines/backend/src/crd/pkg/apis/scheduledworkflow/v1beta1"
 	"io"
 	"net"
 	"reflect"
 	"strconv"
+
+	scheduledworkflow "github.com/kubeflow/pipelines/backend/src/crd/pkg/apis/scheduledworkflow/v1beta1"
 
 	"github.com/cenkalti/backoff"
 	"github.com/golang/glog"
@@ -296,20 +297,37 @@ func (r *ResourceManager) GetPipelineByNameAndNamespaceV1(name string, namespace
 }
 
 // Deletes a pipeline. Does not delete pipeline spec in the object storage.
-// Fails if the pipeline has existing pipeline versions.
-func (r *ResourceManager) DeletePipeline(pipelineId string) error {
+// If cascade is true, deletes all pipeline versions first.
+// If cascade is false (default), fails if the pipeline has existing pipeline versions.
+func (r *ResourceManager) DeletePipeline(pipelineId string, cascade bool) error {
 	// Check if pipeline exists
 	_, err := r.pipelineStore.GetPipeline(pipelineId)
 	if err != nil {
 		return util.Wrapf(err, "Failed to delete pipeline with id %v as it was not found", pipelineId)
 	}
 
-	// Check if it has no pipeline versions in Ready state
-	latestPipelineVersion, err := r.pipelineStore.GetLatestPipelineVersion(pipelineId)
-	if latestPipelineVersion != nil {
-		return util.NewInvalidInputError("Failed to delete pipeline with id %v as it has existing pipeline versions (e.g. %v)", pipelineId, latestPipelineVersion.UUID)
-	} else if err.(*util.UserError).ExternalStatusCode() != codes.NotFound {
-		return util.Wrapf(err, "Failed to delete pipeline with id %v as it failed to check existing pipeline versions", pipelineId)
+	if cascade {
+		// List all versions
+		versions, _, _, err := r.pipelineStore.ListPipelineVersions(pipelineId, &list.Options{})
+		if err != nil {
+			return util.Wrapf(err, "Failed to list pipeline versions for cascade deletion of pipeline %v", pipelineId)
+		}
+
+		// Delete all versions first
+		for _, version := range versions {
+			err = r.DeletePipelineVersion(version.UUID)
+			if err != nil {
+				return util.Wrapf(err, "Failed to delete pipeline version %v during cascade deletion of pipeline %v", version.UUID, pipelineId)
+			}
+		}
+	} else {
+		// Check if it has no pipeline versions in Ready state
+		latestPipelineVersion, err := r.pipelineStore.GetLatestPipelineVersion(pipelineId)
+		if latestPipelineVersion != nil {
+			return util.NewInvalidInputError("Failed to delete pipeline with id %v as it has existing pipeline versions (e.g. %v)", pipelineId, latestPipelineVersion.UUID)
+		} else if err.(*util.UserError).ExternalStatusCode() != codes.NotFound {
+			return util.Wrapf(err, "Failed to delete pipeline with id %v as it failed to check existing pipeline versions", pipelineId)
+		}
 	}
 
 	// Mark pipeline as deleting so it's not visible to user.
