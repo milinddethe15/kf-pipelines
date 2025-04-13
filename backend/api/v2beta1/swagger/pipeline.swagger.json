@@ -235,6 +235,13 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "cascade",
+            "description": "Optional. If true, the pipeline and all its versions will be deleted.\nIf false (default), only the pipeline will be deleted if it has no versions.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": [

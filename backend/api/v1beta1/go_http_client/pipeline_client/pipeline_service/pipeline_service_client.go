@@ -83,7 +83,7 @@ func (a *Client) PipelineServiceCreatePipelineVersionV1(params *PipelineServiceC
 }
 
 /*
-PipelineServiceDeletePipelineV1 deletes a pipeline and its pipeline versions
+PipelineServiceDeletePipelineV1 deletes a pipeline by ID if cascade is false default it returns an error if the pipeline has any versions if cascade is true it will also delete all pipeline versions
 */
 func (a *Client) PipelineServiceDeletePipelineV1(params *PipelineServiceDeletePipelineV1Params, authInfo runtime.ClientAuthInfoWriter) (*PipelineServiceDeletePipelineV1OK, error) {
 	// TODO: Validate the params before sending

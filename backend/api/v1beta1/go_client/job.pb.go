@@ -719,9 +719,9 @@ type Job struct {
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// Optional input field. Describing the purpose of the job
 	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	// Required input field.
+	// Optional input field.
 	// Describing what the pipeline manifest and parameters to use
-	// for the scheduled job.
+	// for the scheduled job. If unset, fetch the pipline_spec at runtime.
 	PipelineSpec *PipelineSpec `protobuf:"bytes,4,opt,name=pipeline_spec,json=pipelineSpec,proto3" json:"pipeline_spec,omitempty"`
 	// Optional input field. Specify which resource this job belongs to.
 	ResourceReferences []*ResourceReference `protobuf:"bytes,5,rep,name=resource_references,json=resourceReferences,proto3" json:"resource_references,omitempty"`

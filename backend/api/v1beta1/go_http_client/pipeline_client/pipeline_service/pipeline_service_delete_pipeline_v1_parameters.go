@@ -13,6 +13,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -61,6 +62,12 @@ for the pipeline service delete pipeline v1 operation typically these are writte
 */
 type PipelineServiceDeletePipelineV1Params struct {
 
+	/*Cascade
+	  Optional. If true, the pipeline and all its versions will be deleted.
+	If false (default), only the pipeline will be deleted if it has no versions.
+
+	*/
+	Cascade *bool
 	/*ID
 	  The ID of the pipeline to be deleted.
 
@@ -105,6 +112,17 @@ func (o *PipelineServiceDeletePipelineV1Params) SetHTTPClient(client *http.Clien
 	o.HTTPClient = client
 }
 
+// WithCascade adds the cascade to the pipeline service delete pipeline v1 params
+func (o *PipelineServiceDeletePipelineV1Params) WithCascade(cascade *bool) *PipelineServiceDeletePipelineV1Params {
+	o.SetCascade(cascade)
+	return o
+}
+
+// SetCascade adds the cascade to the pipeline service delete pipeline v1 params
+func (o *PipelineServiceDeletePipelineV1Params) SetCascade(cascade *bool) {
+	o.Cascade = cascade
+}
+
 // WithID adds the id to the pipeline service delete pipeline v1 params
 func (o *PipelineServiceDeletePipelineV1Params) WithID(id string) *PipelineServiceDeletePipelineV1Params {
 	o.SetID(id)
@@ -123,6 +141,22 @@ func (o *PipelineServiceDeletePipelineV1Params) WriteToRequest(r runtime.ClientR
 		return err
 	}
 	var res []error
+
+	if o.Cascade != nil {
+
+		// query param cascade
+		var qrCascade bool
+		if o.Cascade != nil {
+			qrCascade = *o.Cascade
+		}
+		qCascade := swag.FormatBool(qrCascade)
+		if qCascade != "" {
+			if err := r.SetQueryParam("cascade", qCascade); err != nil {
+				return err
+			}
+		}
+
+	}
 
 	// path param id
 	if err := r.SetPathParam("id", o.ID); err != nil {

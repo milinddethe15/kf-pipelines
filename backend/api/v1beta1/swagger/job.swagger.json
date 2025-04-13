@@ -316,7 +316,7 @@
         },
         "pipeline_spec": {
           "$ref": "#/definitions/apiPipelineSpec",
-          "description": "Required input field.\nDescribing what the pipeline manifest and parameters to use\nfor the scheduled job."
+          "description": "Optional input field.\nDescribing what the pipeline manifest and parameters to use\nfor the scheduled job. If unset, fetch the pipline_spec at runtime."
         },
         "resource_references": {
           "type": "array",
